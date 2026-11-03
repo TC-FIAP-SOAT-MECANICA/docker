@@ -17,12 +17,24 @@ API a partir do próprio código, veja o README do
 [**⬇ Baixar setup.sh**](https://raw.githubusercontent.com/TC-FIAP-SOAT-MECANICA/docker/main/setup.sh)
 ([ver o arquivo](setup.sh))
 
-Pré-requisitos: `git` e Docker Desktop em execução. No Windows, rode pelo Git Bash ou WSL.
+Pré-requisitos: `git` e Docker Desktop em execução.
+
+Linux, macOS, Git Bash ou WSL:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/TC-FIAP-SOAT-MECANICA/docker/main/setup.sh -o setup.sh
 bash setup.sh
 ```
+
+Windows (Prompt de Comando ou PowerShell), com o [**⬇ setup.bat**](https://raw.githubusercontent.com/TC-FIAP-SOAT-MECANICA/docker/main/setup.bat)
+([ver o arquivo](setup.bat)). Também dá para abrir com duplo clique:
+
+```bat
+curl -fsSL https://raw.githubusercontent.com/TC-FIAP-SOAT-MECANICA/docker/main/setup.bat -o setup.bat
+setup.bat
+```
+
+Os dois scripts fazem o mesmo e aceitam as mesmas opções.
 
 O script:
 
@@ -42,7 +54,7 @@ Rodar o script de novo atualiza os dois repositórios (`git pull`) e reconstrói
 ## Já clonou este repositório?
 
 ```bash
-./setup.sh
+./setup.sh      # ou setup.bat no Windows
 ```
 
 Ou, com o ms-mecanica já em `services/ms-mecanica` (ou em outra pasta, via `MS_MECANICA_PATH` no `.env`):
@@ -83,6 +95,6 @@ Tudo é opcional: sem `.env`, valem os padrões. Copie [.env.example](.env.examp
 | Quero... | Comando |
 |---|---|
 | Ver o log da API | `docker compose logs -f ms-mecanica` |
-| Atualizar o código e reconstruir | `./setup.sh` |
+| Atualizar o código e reconstruir | `./setup.sh` (ou `setup.bat`) |
 | Parar (mantém os dados) | `docker compose down` |
 | Parar e apagar os dados | `docker compose down -v` |
