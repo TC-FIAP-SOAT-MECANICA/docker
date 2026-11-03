@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DOCKER_REPO_URL="${DOCKER_REPO_URL:-https://github.com/TC-FIAP-SOAT-MECANICA/docker.git}"
-DOCKER_BRANCH="${DOCKER_BRANCH:-main}"
+BRANCH="main"
 MS_MECANICA_REPO_URL="${MS_MECANICA_REPO_URL:-https://github.com/TC-FIAP-SOAT-MECANICA/ms-mecanica.git}"
 DIRETORIO="${DIRETORIO:-oficina-mecanica}"
 TIMEOUT_SEGUNDOS="${TIMEOUT_SEGUNDOS:-300}"
@@ -10,16 +10,15 @@ SERVICO_API="ms-mecanica"
 
 uso() {
     cat <<EOF
-Uso: ./setup.sh [-m branch] [-d diretorio]
+Uso: ./setup.sh [-d diretorio]
 
-Baixa o repositório docker e o ms-mecanica e sobe tudo no Docker (API e PostgreSQL).
+Baixa a branch main do repositório docker e do ms-mecanica e sobe tudo no Docker (API e PostgreSQL).
 Rodado de dentro de um clone do repositório docker, usa esse clone.
 
-  -m branch     Branch do ms-mecanica (padrão: MS_MECANICA_BRANCH do .env ou main)
   -d diretorio  Pasta onde o repositório docker é clonado (padrão: ${DIRETORIO})
   -h            Mostra esta ajuda
 
-Também aceita as variáveis DOCKER_REPO_URL, DOCKER_BRANCH, MS_MECANICA_REPO_URL, DIRETORIO e TIMEOUT_SEGUNDOS.
+Também aceita as variáveis DOCKER_REPO_URL, MS_MECANICA_REPO_URL, DIRETORIO e TIMEOUT_SEGUNDOS.
 EOF
 }
 
@@ -42,10 +41,8 @@ clonar_ou_atualizar() {
     fi
 }
 
-BRANCH_ARGUMENTO=""
-while getopts "m:d:h" opcao; do
+while getopts "d:h" opcao; do
     case "$opcao" in
-        m) BRANCH_ARGUMENTO="$OPTARG" ;;
         d) DIRETORIO="$OPTARG" ;;
         h) uso; exit 0 ;;
         *) uso; exit 1 ;;
@@ -71,7 +68,7 @@ if [ -f "$PASTA_SCRIPT/docker-compose.yml" ] && [ -d "$PASTA_SCRIPT/.git" ]; the
     cd "$PASTA_SCRIPT"
 else
     info "Baixando o repositório docker"
-    clonar_ou_atualizar "$DOCKER_REPO_URL" "$DOCKER_BRANCH" "$DIRETORIO"
+    clonar_ou_atualizar "$DOCKER_REPO_URL" "$BRANCH" "$DIRETORIO"
     cd "$DIRETORIO"
 fi
 
@@ -79,8 +76,6 @@ if [ ! -f .env ] && [ -f .env.example ]; then
     cp .env.example .env
     echo "Criado .env a partir do .env.example"
 fi
-BRANCH_ENV="$(grep -E '^MS_MECANICA_BRANCH=' .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r' || true)"
-MS_MECANICA_BRANCH="${BRANCH_ARGUMENTO:-${MS_MECANICA_BRANCH:-${BRANCH_ENV:-main}}}"
 API_PORT="$(grep -E '^API_PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r' || true)"
 API_PORT="${API_PORT:-8080}"
 POSTGRES_PORT="$(grep -E '^POSTGRES_PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r' || true)"
@@ -88,7 +83,7 @@ POSTGRES_PORT="${POSTGRES_PORT:-5436}"
 
 info "Baixando o ms-mecanica"
 mkdir -p services
-clonar_ou_atualizar "$MS_MECANICA_REPO_URL" "$MS_MECANICA_BRANCH" services/ms-mecanica
+clonar_ou_atualizar "$MS_MECANICA_REPO_URL" "$BRANCH" services/ms-mecanica
 
 info "Compilando e subindo os containers (a primeira vez leva alguns minutos)"
 "${COMPOSE[@]}" up -d --build --remove-orphans
@@ -115,7 +110,7 @@ echo " pronto"
 
 cat <<EOF
 
-Tudo no ar! (ms-mecanica na branch $MS_MECANICA_BRANCH)
+Tudo no ar! (ms-mecanica na branch $BRANCH)
 
   API         http://localhost:${API_PORT}/api/v1
               login: POST /auth/login com o ADMIN do .env (padrão admin@oficina.com / admin12345)
