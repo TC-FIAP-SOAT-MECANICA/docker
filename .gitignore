@@ -1,0 +1,7 @@
+services/
+.env
+
+.idea/
+.vscode/
+.claude/
+.agents/

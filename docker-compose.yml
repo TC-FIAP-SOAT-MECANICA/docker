@@ -1,0 +1,43 @@
+name: oficina-mecanica
+
+services:
+  ms-mecanica:
+    build:
+      context: ${MS_MECANICA_PATH:-./services/ms-mecanica}
+    image: oficina-mecanica/ms-mecanica:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-oficina}
+      DB_USERNAME: ${POSTGRES_USER:-oficina}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-oficina}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@oficina.com}
+      ADMIN_SENHA: ${ADMIN_SENHA:-admin12345}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-oficina}
+      POSTGRES_USER: ${POSTGRES_USER:-oficina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oficina}
+    ports:
+      - "${POSTGRES_PORT:-5436}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oficina} -d ${POSTGRES_DB:-oficina}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
