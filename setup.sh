@@ -7,6 +7,8 @@ MS_MECANICA_REPO_URL="${MS_MECANICA_REPO_URL:-https://github.com/TC-FIAP-SOAT-ME
 DIRETORIO="${DIRETORIO:-oficina-mecanica}"
 TIMEOUT_SEGUNDOS="${TIMEOUT_SEGUNDOS:-300}"
 SERVICO_API="ms-mecanica"
+# Mesmo nome do campo image do ms-mecanica no docker-compose.yml
+IMAGEM_API="oficina-mecanica/ms-mecanica:latest"
 
 uso() {
     cat <<EOF
@@ -84,6 +86,15 @@ POSTGRES_PORT="${POSTGRES_PORT:-5436}"
 info "Baixando o ms-mecanica"
 mkdir -p services
 clonar_ou_atualizar "$MS_MECANICA_REPO_URL" "$BRANCH" services/ms-mecanica
+
+info "Verificando se a imagem $IMAGEM_API já existe"
+if docker image inspect "$IMAGEM_API" >/dev/null 2>&1; then
+    echo "Imagem encontrada: removendo o container da API e a imagem antiga"
+    "${COMPOSE[@]}" rm -s -f "$SERVICO_API"
+    docker image rm "$IMAGEM_API" || erro "falha ao remover a imagem $IMAGEM_API. Algum container fora deste projeto pode estar usando a imagem: veja com docker ps -a --filter ancestor=$IMAGEM_API"
+else
+    echo "Nenhuma imagem anterior encontrada"
+fi
 
 info "Compilando e subindo os containers (a primeira vez leva alguns minutos)"
 "${COMPOSE[@]}" up -d --build --remove-orphans

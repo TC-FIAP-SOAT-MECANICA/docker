@@ -8,6 +8,8 @@ if not defined DIRETORIO set "DIRETORIO=oficina-mecanica"
 if not defined TIMEOUT_SEGUNDOS set "TIMEOUT_SEGUNDOS=300"
 set "BRANCH=main"
 set "SERVICO_API=ms-mecanica"
+rem Mesmo nome do campo image do ms-mecanica no docker-compose.yml
+set "IMAGEM_API=oficina-mecanica/ms-mecanica:latest"
 
 rem Aberto pelo Explorer (duplo clique) a janela fecha ao terminar: nesse caso pausa antes de sair.
 set "DUPLO_CLIQUE=0"
@@ -79,6 +81,16 @@ call :info "Baixando o ms-mecanica"
 if not exist services mkdir services
 set "MSG=falha ao baixar o ms-mecanica (%MS_MECANICA_REPO_URL%)."
 call :clonar_ou_atualizar "%MS_MECANICA_REPO_URL%" "%BRANCH%" "services\ms-mecanica" || goto erro
+
+call :info "Verificando se a imagem %IMAGEM_API% já existe"
+docker image inspect %IMAGEM_API% >nul 2>&1
+if errorlevel 1 (
+    echo Nenhuma imagem anterior encontrada
+) else (
+    echo Imagem encontrada: removendo o container da API e a imagem antiga
+    %COMPOSE% rm -s -f %SERVICO_API% || (set "MSG=falha ao remover o container da API." & goto erro)
+    docker image rm %IMAGEM_API% || (set "MSG=falha ao remover a imagem %IMAGEM_API%. Algum container fora deste projeto pode estar usando a imagem: veja com docker ps -a --filter ancestor=%IMAGEM_API%" & goto erro)
+)
 
 call :info "Compilando e subindo os containers (a primeira vez leva alguns minutos)"
 %COMPOSE% up -d --build --remove-orphans || (set "MSG=falha ao subir os containers. Veja a saída acima." & goto erro)

@@ -42,7 +42,7 @@ O script:
 2. clona a `main` deste repositório em `oficina-mecanica/` (ou usa o clone atual, se rodado de dentro dele);
 3. cria o `.env` a partir do `.env.example`, se ainda não existir;
 4. clona ou atualiza a `main` do ms-mecanica em `services/ms-mecanica`;
-5. compila a API e sobe os containers;
+5. remove a imagem anterior da API (`oficina-mecanica/ms-mecanica:latest`), se existir, compila a nova e sobe os containers;
 6. espera a API ficar saudável e mostra os endereços.
 
 | Opção | Para quê |
